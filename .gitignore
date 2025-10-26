@@ -73,3 +73,9 @@ crashlytics-build.properties
 *.p4config
 Library/p4plugin.log
 
+# Firebase configuration files (contain API keys)
+google-services.json
+GoogleService-Info.plist
+Assets/google-services.json
+Assets/GoogleService-Info.plist
+
