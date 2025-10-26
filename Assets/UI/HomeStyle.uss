@@ -1,0 +1,75 @@
+.button {
+    margin-top: 1px;
+    margin-right: 1px;
+    margin-bottom: 1px;
+    margin-left: 1px;
+    padding-top: 6px;
+    padding-right: 6px;
+    padding-bottom: 1px;
+    padding-left: 1px;
+    background-color: rgba(0, 0, 0, 0.59);
+    border-top-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    border-left-width: 4px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    font-size: 20px;
+    color: rgb(255, 255, 255);
+    -unity-text-align: middle-center;
+    -unity-font: resource('Fonts/Signature');
+}
+
+.button:active {
+    color: rgb(255, 249, 249);
+    border-left-color: rgb(255, 255, 255);
+    border-right-color: rgb(255, 255, 255);
+    border-top-color: rgb(255, 255, 255);
+    border-bottom-color: rgb(255, 255, 255);
+}
+
+.button:hover {
+    background-color: rgba(142, 142, 142, 0.59);
+}
+
+.screen {
+    flex-grow: 1;
+    align-items: center;
+}
+
+.screen-background {
+    background-image: resource('37649009f352ce745026882f8ec0d8a6');
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.menu-background-color {
+    background-color: rgba(0, 0, 0, 0.39);
+}
+
+.menu-left-panel {
+    flex-grow: 1;
+    align-items: flex-start;
+    align-self: flex-start;
+    width: 35%;
+}
+
+.menu-button-list {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: flex-start;
+    width: 50%;
+    min-width: 200px;
+}
+
+.menu-button {
+    width: 100%;
+    height: 100px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 40px;
+}
+#menu-authenticate-panel, #menu-signin-panel {
+    display: none;
+}

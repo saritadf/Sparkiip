@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "44617144353",
+    "firebase_url": "https://sparkiip-66e6d-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "sparkiip-66e6d",
+    "storage_bucket": "sparkiip-66e6d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44617144353:android:e09e34fcd3e354e83deb60",
+        "android_client_info": {
+          "package_name": "android.o125.sparkiip"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "44617144353-5q25eeinpj1rbkls47mmao4091pb740l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "android.o125.sparkiip",
+            "certificate_hash": "371225dca638c886511fe282e334599f2c777433"
+          }
+        },
+        {
+          "client_id": "44617144353-t0nih6iekgc1e2ffqfdsn67fa7l2deph.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6_WMXyX4niNCQJawgQCx4OqXKtrby8lA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "44617144353-t0nih6iekgc1e2ffqfdsn67fa7l2deph.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "44617144353-c782fethtj33k36klj8q6tvbja3uglem.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "ios.o125.sparkiip"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
