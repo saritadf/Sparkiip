@@ -1,15 +1,20 @@
-using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class PanelManager : MonoBehaviour
+namespace Assets.Scripts
 {
-    // UI Document for Home Screen
-    public UIDocument homeScreen;
+    /// <summary>
+    /// Manages UI panels and responsive layout for the home screen
+    /// </summary>
+    public class PanelManager : MonoBehaviour
+    {
+        // UI Document for Home Screen
+        [SerializeField]
+        private UIDocument _homeScreen;
 
     private void OnEnable()
     {
-        if (homeScreen != null)
+        if (_homeScreen != null)
         {
             BindMainMenuScreen();
             AdjustLayoutOnScreenSizeChange();
@@ -23,7 +28,7 @@ public class PanelManager : MonoBehaviour
 
     private void BindMainMenuScreen()
     {
-        var root = homeScreen.rootVisualElement;
+        var root = _homeScreen.rootVisualElement;
         var button = root.Q<Button>("button");
 
         if (button != null)
@@ -41,8 +46,8 @@ public class PanelManager : MonoBehaviour
 
     private void RegisterScreenSizeChangeCallback()
     {
-        var root = homeScreen.rootVisualElement;
-        root.RegisterCallback<GeometryChangedEvent>(evt =>
+        var root = _homeScreen.rootVisualElement;
+        root.RegisterCallback<GeometryChangedEvent>(_ =>
         {
             AdjustLayoutOnScreenSizeChange();
         });
@@ -50,7 +55,7 @@ public class PanelManager : MonoBehaviour
 
     private void AdjustLayoutOnScreenSizeChange()
     {
-        var root = homeScreen.rootVisualElement;
+        var root = _homeScreen.rootVisualElement;
         float screenWidth = root.resolvedStyle.width;
 
         // Apply or remove the small-screen class based on the screen width
@@ -62,5 +67,6 @@ public class PanelManager : MonoBehaviour
         {
             root.RemoveFromClassList("small-screen");
         }
+    }
     }
 }

@@ -1,0 +1,82 @@
+# Sparkiip - Unity C# Project Rules
+
+## ⚠️ CRITICAL: English-Only Policy
+- **EVERYTHING must be in English**: code, comments, variables, functions, classes, files, commits, logs
+- **NO Spanish or other languages** - no exceptions
+- File names: `AuthenticationManager.cs` ✓ | `GestorDeAutenticacion.cs` ✗
+- User-facing UI strings: use proper localization system only
+
+## Documentation Policy
+- **DO NOT auto-generate documentation** unless explicitly requested
+- Prefer self-documenting code over comments
+- Only create README/docs when user specifically asks
+- Clean up temporary documentation files after tasks
+
+## Naming Conventions
+- **PascalCase**: classes, public methods, properties, public fields
+- **camelCase**: private fields, local variables, parameters
+- **_privateField**: prefix private fields with underscore
+- Avoid abbreviations except: UI, ID, URL, API
+
+## Firebase Integration (Critical)
+- **Always** wrap Firebase operations in try-catch blocks
+- Handle `FirebaseException` specifically
+- Use async/await for all Firebase database and auth operations
+- Log errors with `Debug.LogError()` for failures
+- **Never** expose credentials or sensitive information in code
+- Always check authentication state before user-specific operations
+
+## Unity-Specific Patterns
+- **MonoBehaviour**: Focus on Unity lifecycle and orchestration only
+- Separate business logic from Unity-specific code
+- Use `[SerializeField]` for private fields visible in Inspector
+- Cache component references in `Awake()` or `Start()`
+- **Always** null-check Unity objects before use
+- Clean up event subscriptions in `OnDestroy()`
+
+## UI Toolkit (UIElements) 
+- Cache VisualElement and button references (avoid repeated queries)
+- Use meaningful names matching element purpose
+- UI state: use `DisplayStyle.None` / `DisplayStyle.Flex`
+- Button clicks: use `clicked` event
+- Clean up UI event subscriptions when done
+- Use USS (Unity Style Sheets) for consistent styling
+- Design spacing scale: 4, 8, 16, 24, 32, 48, 64px
+- Disable buttons during async operations to prevent double-clicks
+
+## Async Operations
+- Use async/await for: Firebase, network calls, I/O operations
+- Use coroutines for: frame-based operations, animations
+- Never block main thread with I/O operations
+- Handle exceptions in async methods properly
+
+## Performance (Unity-Specific)
+- **Never** allocate in `Update()`, `FixedUpdate()`, or `LateUpdate()`
+- Cache expensive operations and component lookups
+- Use object pooling for frequently instantiated objects
+- Minimize USS recalculations by caching style changes
+
+## Error Handling & Logging
+- `Debug.Log()`: informational messages
+- `Debug.LogWarning()`: non-critical issues  
+- `Debug.LogError()`: errors and exceptions
+- Format: `"ActionName: descriptive message with {variable}"`
+- Always include context (what failed, why, with what data)
+
+## Security
+- Never commit: credentials, API keys, sensitive data
+- Validate user input before processing
+- Handle auth errors gracefully with user-friendly messages
+- Properly use: google-services.json, GoogleService-Info.plist
+
+## Platform-Specific
+- Test auth flows on both Android and iOS
+- Consider: Google Play Games vs Game Center differences
+- Use conditional compilation: `#if UNITY_ANDROID`, `#if UNITY_IOS`
+- Test UI on actual devices, not just editor
+
+## Code Quality (Project-Specific Only)
+- 4 spaces indentation
+- Remove commented-out code before committing
+- XML docs ONLY for public APIs when truly needed
+- Comments only when code cannot be self-explanatory

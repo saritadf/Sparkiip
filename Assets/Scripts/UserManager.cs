@@ -4,9 +4,11 @@ using Firebase.Database;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Google;
-public class UserManager : MonoBehaviour
+using Task = System.Threading.Tasks.Task;
+
+namespace Assets.Scripts
+{
+    public class UserManager : MonoBehaviour
 {
     private FirebaseAuth _auth;
     private DatabaseReference _databaseRef;
@@ -33,7 +35,6 @@ public class UserManager : MonoBehaviour
     private TextField _passwordInputSignIn;
     private Button _submitSignInButton;
     
-    private Label _messageLabel;
     private async void Start()
     {
         // Get the UIDocument component
@@ -72,10 +73,10 @@ public class UserManager : MonoBehaviour
         _menuAuthenticatePanel.style.display = DisplayStyle.None;
         _menuSignInPanel.style.display = DisplayStyle.None;
         
-        // Configura Google Sign-In
+        // Configure Google Sign-In
         // _googleSignInConfiguration = new GoogleSignInConfiguration
         // {
-        //     WebClientId = "TU_ID_DE_CLIENTE_WEB_DE_GOOGLE",  // Obtén esto desde Firebase
+        //     WebClientId = "YOUR_GOOGLE_WEB_CLIENT_ID",  // Get this from Firebase Console
         //     RequestIdToken = true
         // };
 
@@ -105,13 +106,9 @@ public class UserManager : MonoBehaviour
         _menuSelectionPanel.style.display = DisplayStyle.None;
         _menuSignInPanel.style.display = DisplayStyle.Flex;
     }
-    private async void OnGoogleSignInButtonClicked()
+    private void OnGoogleSignInButtonClicked()
     {
-        await SignInWithGoogle();
-    }
-
-    private async Task SignInWithGoogle()
-    {
+        Debug.LogWarning("Google Sign-In: Implementation pending. Requires ID token from Google authentication.");
     }
     private async void OnRegisterButtonClicked()
     {
@@ -135,24 +132,23 @@ public class UserManager : MonoBehaviour
         await CreateUser(email, password);
     }
     
-    // Creates a new user with email and password
+    /// <summary>
+    /// Creates a new user with email and password
+    /// </summary>
     public async Task CreateUser(string email, string password)
     {
-        var authResultTask = _auth.CreateUserWithEmailAndPasswordAsync(email, password);
-
-        if (authResultTask.IsCompletedSuccessfully)
+        try
         {
-            FirebaseUser newUser = authResultTask.Result.User;
+            var authResult = await _auth.CreateUserWithEmailAndPasswordAsync(email, password);
+            FirebaseUser newUser = authResult.User;
             Debug.Log($"User created successfully: {newUser.UserId}");
             await SaveUserToDatabase(newUser);
         }
-        else
+        catch (FirebaseException ex)
         {
-            if (authResultTask.Exception != null)
-            {
-                Debug.LogError($"Failed to create user: {authResultTask.Exception.Flatten().InnerExceptions[0].Message}");
-            }
+            Debug.LogError($"Failed to create user: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
     }
     
     // Event handler for the login button
@@ -178,7 +174,9 @@ public class UserManager : MonoBehaviour
         await SignInUser(email, password);
     }
 
-    // Signs in a user with email and password
+    /// <summary>
+    /// Signs in a user with email and password
+    /// </summary>
     private async Task SignInUser(string email, string password)
     {
         try
@@ -192,9 +190,12 @@ public class UserManager : MonoBehaviour
         {
             Debug.LogError($"Failed to sign in: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
     }
 
-    // Saves user data to the database
+    /// <summary>
+    /// Saves user data to the database
+    /// </summary>
     private async Task SaveUserToDatabase(FirebaseUser user)
     {
         Dictionary<string, object> userData = new Dictionary<string, object>
@@ -212,15 +213,17 @@ public class UserManager : MonoBehaviour
         {
             Debug.LogError($"Failed to save user data: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
     }
-    // Authenticate with Firebase using Google Play Games ID Token
+    /// <summary>
+    /// Authenticate with Firebase using Google Play Games ID Token
+    /// </summary>
     public async Task SignInWithGooglePlayGames(string idToken)
     {
         try
         {
             var credential = GoogleAuthProvider.GetCredential(idToken, null);
-            var authResult = await _auth.SignInWithCredentialAsync(credential);
-            FirebaseUser user = authResult;
+            FirebaseUser user = await _auth.SignInWithCredentialAsync(credential);
             Debug.Log($"Google Play Games sign-in successful in Firebase: {user.UserId}");
 
             // Save user data to Firebase Database
@@ -230,9 +233,12 @@ public class UserManager : MonoBehaviour
         {
             Debug.LogError($"Google Play Games sign-in failed in Firebase: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
     }
 
-    // Adds a friend to the user's friend list
+    /// <summary>
+    /// Adds a friend to the user's friend list
+    /// </summary>
     public async Task AddFriend(string userId, string friendId)
     {
         try
@@ -244,37 +250,62 @@ public class UserManager : MonoBehaviour
         {
             Debug.LogError($"Failed to add friend: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
     }
 
-    // Google Sign-In integration
+    /// <summary>
+    /// Google Sign-In integration
+    /// </summary>
     public async Task SignInWithGoogle(string idToken)
     {
         try
         {
             var credential = GoogleAuthProvider.GetCredential(idToken, null);
-            var authResult = await _auth.SignInWithCredentialAsync(credential);
-            FirebaseUser user = authResult;
+            FirebaseUser user = await _auth.SignInWithCredentialAsync(credential);
             Debug.Log($"Google sign-in successful: {user.UserId}");
         }
         catch (FirebaseException ex)
         {
             Debug.LogError($"Google sign-in failed: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
     }
 
-    // Apple Sign-In integration
+    /// <summary>
+    /// Apple Sign-In integration
+    /// </summary>
     public async Task SignInWithApple(string idToken)
     {
         try
         {
             var credential = OAuthProvider.GetCredential("apple.com", idToken, null, null);
-            var authResult = await _auth.SignInWithCredentialAsync(credential);
-            FirebaseUser user = authResult;
+            FirebaseUser user = await _auth.SignInWithCredentialAsync(credential);
             Debug.Log($"Apple sign-in successful: {user.UserId}");
         }
         catch (FirebaseException ex)
         {
             Debug.LogError($"Apple sign-in failed: {ex.Message}");
         }
+        return System.Threading.Tasks.Task.CompletedTask;
+    }
+
+    private void OnDestroy()
+    {
+        // Clean up event subscriptions to prevent memory leaks
+        if (_submitRegisterButton != null)
+            _submitRegisterButton.clicked -= OnRegisterButtonClicked;
+        
+        if (_submitSignInButton != null)
+            _submitSignInButton.clicked -= OnSignInButtonClicked;
+        
+        if (_registerButton != null)
+            _registerButton.clicked -= ShowRegisterPanel;
+        
+        if (_emailSignInButton != null)
+            _emailSignInButton.clicked -= ShowSignInPanel;
+        
+        if (_googleSignInButton != null)
+            _googleSignInButton.clicked -= OnGoogleSignInButtonClicked;
+    }
     }
 }
