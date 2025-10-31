@@ -1,6 +1,9 @@
 using UnityEngine;
+
+#if UNITY_ANDROID
 using GooglePlayGames;
 using GooglePlayGames.BasicApi;
+#endif
 
 namespace Assets.Scripts
 {
@@ -34,10 +37,14 @@ namespace Assets.Scripts
         /// </summary>
         private void InitializeGooglePlayGames()
         {
+            #if UNITY_ANDROID
             PlayGamesPlatform.Activate();
 
             // Sign in to Google Play Games
             SignInToGooglePlayGames();
+            #else
+            Debug.LogWarning("Google Play Games is only supported on Android platform");
+            #endif
         }
         
         /// <summary>
@@ -45,6 +52,7 @@ namespace Assets.Scripts
         /// </summary>
         private void SignInToGooglePlayGames()
         {
+            #if UNITY_ANDROID
             PlayGamesPlatform.Instance.Authenticate((success) =>
             {
                 if (success == SignInStatus.Success)
@@ -75,6 +83,7 @@ namespace Assets.Scripts
                     Debug.LogError($"Google Play Games login failed: {success}");
                 }
             });
+            #endif
         }
         
         #region Unity Services (Commented Out - Install packages to use)

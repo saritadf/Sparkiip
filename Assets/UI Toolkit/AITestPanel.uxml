@@ -1,0 +1,71 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="root" style="flex-grow: 1; background-color: rgb(32, 32, 40); padding: 24px;">
+        
+        <!-- Header -->
+        <ui:Label text="AI Empathy Testing" name="header-title" class="header-text" style="font-size: 32px; -unity-font-style: bold; color: rgb(255, 255, 255); margin-bottom: 24px; -unity-text-align: upper-center;" />
+        
+        <!-- Daily Challenge Section -->
+        <ui:VisualElement name="daily-challenge-section" style="background-color: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+            <ui:Label text="Daily Challenge" style="font-size: 20px; -unity-font-style: bold; color: rgb(255, 200, 100); margin-bottom: 16px;" />
+            
+            <ui:VisualElement name="daily-challenge-panel" style="margin-bottom: 16px;">
+                <ui:Label name="challenge-text" text="Click 'Generate Challenge' to get your daily emotional connection challenge..." style="font-size: 16px; color: rgb(220, 220, 220); white-space: normal; margin-bottom: 16px;" />
+            </ui:VisualElement>
+            
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                <ui:Button name="regenerate-challenge-btn" text="Generate Challenge" class="primary-button" style="flex-grow: 1; margin-right: 8px;" />
+                <ui:Button name="accept-challenge-btn" text="Accept Challenge" class="secondary-button" style="flex-grow: 1; margin-left: 8px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Sentiment Analysis Section -->
+        <ui:VisualElement name="sentiment-section" style="background-color: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+            <ui:Label text="Sentiment Analysis" style="font-size: 20px; -unity-font-style: bold; color: rgb(150, 200, 255); margin-bottom: 16px;" />
+            
+            <ui:TextField name="message-input" label="Test Message:" multiline="true" value="I miss you so much today, thinking about our last call together..." style="margin-bottom: 16px;" />
+            
+            <ui:Button name="analyze-sentiment-btn" text="Analyze Sentiment" class="primary-button" style="margin-bottom: 16px;" />
+            
+            <ui:Label name="sentiment-result" text="Sentiment Score: --" style="font-size: 16px; color: rgb(220, 220, 220); margin-bottom: 8px;" />
+            <ui:Label name="bonsai-growth" text="Bonsai Growth: --" style="font-size: 14px; color: rgb(150, 255, 150);" />
+        </ui:VisualElement>
+        
+        <!-- Empathy Suggestions Section -->
+        <ui:VisualElement name="suggestions-section" style="background-color: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+            <ui:Label text="Empathy Suggestions" style="font-size: 20px; -unity-font-style: bold; color: rgb(255, 150, 200); margin-bottom: 16px;" />
+            
+            <ui:TextField name="partner-message-input" label="Partner's Message:" multiline="true" value="Work has been really tough lately, feeling overwhelmed..." style="margin-bottom: 16px;" />
+            
+            <ui:Button name="get-suggestions-btn" text="Get Response Suggestions" class="primary-button" style="margin-bottom: 16px;" />
+            
+            <ui:VisualElement name="suggestions-panel" style="display: none;">
+                <ui:Label text="Suggested Responses:" style="font-size: 16px; color: rgb(220, 220, 220); margin-bottom: 12px; -unity-font-style: bold;" />
+                
+                <ui:VisualElement name="suggestion-1-container" class="suggestion-card" style="margin-bottom: 12px;">
+                    <ui:Label text="1" style="font-size: 14px; color: rgb(255, 200, 100); margin-bottom: 4px; -unity-font-style: bold;" />
+                    <ui:Label name="suggestion-1-text" text="Loading..." style="font-size: 14px; color: rgb(220, 220, 220); white-space: normal;" />
+                </ui:VisualElement>
+                
+                <ui:VisualElement name="suggestion-2-container" class="suggestion-card" style="margin-bottom: 12px;">
+                    <ui:Label text="2" style="font-size: 14px; color: rgb(255, 200, 100); margin-bottom: 4px; -unity-font-style: bold;" />
+                    <ui:Label name="suggestion-2-text" text="Loading..." style="font-size: 14px; color: rgb(220, 220, 220); white-space: normal;" />
+                </ui:VisualElement>
+                
+                <ui:VisualElement name="suggestion-3-container" class="suggestion-card" style="margin-bottom: 12px;">
+                    <ui:Label text="3" style="font-size: 14px; color: rgb(255, 200, 100); margin-bottom: 4px; -unity-font-style: bold;" />
+                    <ui:Label name="suggestion-3-text" text="Loading..." style="font-size: 14px; color: rgb(220, 220, 220); white-space: normal;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Loading Overlay -->
+        <ui:VisualElement name="ai-loading-overlay" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; display: none;">
+            <ui:VisualElement style="background-color: rgb(40, 40, 50); border-radius: 16px; padding: 32px; align-items: center;">
+                <ui:Label text="AI Processing..." style="font-size: 20px; color: white; margin-bottom: 16px; -unity-font-style: bold;" />
+                <ui:Label text="This may take a few seconds..." style="font-size: 14px; color: rgb(200, 200, 200);" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+    </ui:VisualElement>
+</ui:UXML>
+

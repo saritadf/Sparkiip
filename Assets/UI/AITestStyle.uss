@@ -1,0 +1,83 @@
+/* AI Testing Panel Styles */
+
+.primary-button {
+    background-color: rgb(100, 150, 255);
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border-width: 0;
+    -unity-font-style: bold;
+    transition: background-color 0.2s;
+}
+
+.primary-button:hover {
+    background-color: rgb(120, 170, 255);
+}
+
+.primary-button:active {
+    background-color: rgb(80, 130, 235);
+}
+
+.primary-button:disabled {
+    background-color: rgb(60, 60, 70);
+    color: rgb(120, 120, 120);
+}
+
+.secondary-button {
+    background-color: rgb(80, 200, 150);
+    color: white;
+    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border-width: 0;
+    -unity-font-style: bold;
+}
+
+.secondary-button:hover {
+    background-color: rgb(100, 220, 170);
+}
+
+.secondary-button:active {
+    background-color: rgb(60, 180, 130);
+}
+
+.secondary-button:disabled {
+    background-color: rgb(60, 60, 70);
+    color: rgb(120, 120, 120);
+}
+
+.suggestion-card {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+TextField {
+    margin-bottom: 8px;
+}
+
+TextField Label {
+    color: rgb(200, 200, 200);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+TextField > TextInput {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: rgb(220, 220, 220);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    padding: 8px;
+    font-size: 14px;
+    min-height: 80px;
+}
+
+TextField > TextInput:focus {
+    border-color: rgb(100, 150, 255);
+    border-width: 2px;
+}
+

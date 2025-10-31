@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: ada4128b8eb23ba408b46aba3ff3af17
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 248841
+  packageName: Chat GPT For Games - AI Integration
+  packageVersion: 1.6
+  assetPath: Assets/BitSplash/ChatGptIntegration/Extras/NpcFriend/NPCFriend.cs
+  uploadId: 660950

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 2b38ead7707ca1048a067637834f891b
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 248841
+  packageName: Chat GPT For Games - AI Integration
+  packageVersion: 1.6
+  assetPath: Assets/BitSplash/ChatGptIntegration/Core/Common/ApiUsage.cs
+  uploadId: 660950

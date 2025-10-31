@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8256836c2fd134c4ca469692fc7146a3
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 248841
+  packageName: Chat GPT For Games - AI Integration
+  packageVersion: 1.6
+  assetPath: Assets/BitSplash/ChatGptIntegration/Server/node_relay.zip
+  uploadId: 660950

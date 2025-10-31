@@ -1,303 +1,643 @@
-using Firebase;
+using System;
 using Firebase.Auth;
 using Firebase.Database;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
-using Task = System.Threading.Tasks.Task;
 
 namespace Assets.Scripts
 {
+    /// <summary>
+    /// Manages UI orchestration for authentication flow
+    /// Delegates business logic to AuthenticationService and PairLinkManager
+    /// </summary>
     public class UserManager : MonoBehaviour
 {
-    private FirebaseAuth _auth;
+        private AuthenticationService _authService;
     private DatabaseReference _databaseRef;
-    // private Google _googleSignInConfiguration;
-    
-    // UI elements
-    // Buttons
-    private Button _registerButton;
-    private Button _emailSignInButton;
-    private Button _googleSignInButton;
-    
-    // Panels
+        private PairLinkManager _pairLinkManager;
+        private UIFeedbackManager _uiFeedbackManager;
+        private GoogleSignInHandler _googleSignInHandler;
+        
+        private UIDocument _uiDocument;
+        private VisualElement _root;
+        
     private VisualElement _menuSelectionPanel;
     private VisualElement _menuAuthenticatePanel;
     private VisualElement _menuSignInPanel;
     
-    // Email Register
+        private Button _registerButton;
+        private Button _emailSignInButton;
+        private Button _googleSignInButton;
+        
     private TextField _emailInputRegister;
     private TextField _passwordInputRegister;
     private Button _submitRegisterButton;
+    private Button _backToSelectionFromRegister;
+    private Button _togglePasswordRegister;
     
-    // Email SignIn
     private TextField _emailInputSignIn;
     private TextField _passwordInputSignIn;
     private Button _submitSignInButton;
+    private Button _backToSelectionFromSignIn;
+    private Button _togglePasswordSignIn;
     
-    private async void Start()
-    {
-        // Get the UIDocument component
-        var uiDocument = GameObject.Find("HomeScreen").GetComponent<UIDocument>();
-        
-        // Retrieve UI elements from the UXML file
-        // Panels
-        _menuSelectionPanel = uiDocument.rootVisualElement.Q<VisualElement>("menu-selection-panel");
-        _menuAuthenticatePanel = uiDocument.rootVisualElement.Q<VisualElement>("menu-authenticate-panel");
-        _menuSignInPanel = uiDocument.rootVisualElement.Q<VisualElement>("menu-signin-panel");
-        
-        // Buttons
-        _registerButton = uiDocument.rootVisualElement.Q<Button>("RegisterButton");
-        _emailSignInButton = uiDocument.rootVisualElement.Q<Button>("EmailSignInButton");
-        _googleSignInButton = uiDocument.rootVisualElement.Q<Button>("GoogleSignInButton");
+    private bool _isProcessingAuth;
+    private bool _isPasswordVisibleRegister;
+    private bool _isPasswordVisibleSignIn;
+    
+        private async void Awake()
+        {
+            _authService = new AuthenticationService();
+            _uiFeedbackManager = GetComponent<UIFeedbackManager>();
 
-        // Register Inputs
-        _emailInputRegister = uiDocument.rootVisualElement.Q<TextField>("EmailInput");
-        _passwordInputRegister = uiDocument.rootVisualElement.Q<TextField>("PasswordInput");
-        _submitRegisterButton = uiDocument.rootVisualElement.Q<Button>("RegisterButton");
+            if (_uiFeedbackManager == null)
+            {
+                _uiFeedbackManager = gameObject.AddComponent<UIFeedbackManager>();
+            }
 
-        // Sign in Inputs
-        _emailInputSignIn = uiDocument.rootVisualElement.Q<TextField>("EmailSignIn");
-        _passwordInputSignIn = uiDocument.rootVisualElement.Q<TextField>("PasswordSignIn");
-        _submitSignInButton = uiDocument.rootVisualElement.Q<Button>("SignIn");
-        
-        // Assign click events to buttons
-        _submitRegisterButton.clicked += OnRegisterButtonClicked;
-        _submitSignInButton.clicked += OnSignInButtonClicked;
-        
+            _authService.OnAuthStateChanged += HandleAuthStateChanged;
+            _authService.OnAuthError += HandleAuthError;
+
+            bool initialized = await _authService.InitializeAsync();
+            
+            if (initialized)
+            {
+                _databaseRef = FirebaseDatabase.GetInstance("https://sparkiip-66e6d-default-rtdb.europe-west1.firebasedatabase.app/").RootReference;
+                _pairLinkManager = new PairLinkManager(_databaseRef);
+
+                _pairLinkManager.OnPairCodeGenerated += HandlePairCodeGenerated;
+                _pairLinkManager.OnPairLinkSuccess += HandlePairLinkSuccess;
+                _pairLinkManager.OnPairLinkError += HandlePairLinkError;
+
+                InitializeGoogleSignIn();
+            }
+        }
+
+        private void InitializeGoogleSignIn()
+        {
+            const string webClientId = "44617144353-t0nih6iekgc1e2ffqfdsn67fa7l2deph.apps.googleusercontent.com";
+            
+            _googleSignInHandler = new GoogleSignInHandler();
+            _googleSignInHandler.Initialize(webClientId);
+            
+            _googleSignInHandler.OnSignInSuccess += HandleGoogleSignInSuccess;
+            _googleSignInHandler.OnSignInError += HandleGoogleSignInError;
+
+            Debug.Log("UserManager: Google Sign-In initialized");
+        }
+
+        private void Start()
+        {
+            InitializeUI();
+        }
+
+        private void InitializeUI()
+        {
+            _uiDocument = GameObject.Find("HomeScreen")?.GetComponent<UIDocument>();
+            
+            if (_uiDocument == null)
+            {
+                Debug.LogError("UserManager: HomeScreen UIDocument not found");
+                return;
+            }
+
+            _root = _uiDocument.rootVisualElement;
+
+            CacheUIElements();
+            SetupGoogleButtonIcon();
+            RegisterEventHandlers();
+            ShowInitialPanel();
+        }
+
+        private void SetupGoogleButtonIcon()
+        {
+            if (_googleSignInButton == null)
+            {
+                Debug.LogWarning("UserManager: Google Sign-In button not found");
+                return;
+            }
+            
+            Texture2D googleIcon = Resources.Load<Texture2D>("SocialIcons/Google");
+            
+            if (googleIcon != null)
+            {
+                var icon = new VisualElement();
+                icon.style.width = 20;
+                icon.style.height = 20;
+                icon.style.marginRight = 8;
+                icon.style.backgroundImage = new StyleBackground(googleIcon);
+                icon.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
+                icon.style.backgroundRepeat = new BackgroundRepeat(Repeat.NoRepeat, Repeat.NoRepeat);
+                
+                _googleSignInButton.Insert(0, icon);
+                Debug.Log("UserManager: Google icon added to button");
+            }
+            else
+            {
+                Debug.LogWarning("UserManager: Google icon not found at Resources/SocialIcons/Google");
+            }
+        }
+
+        private void CacheUIElements()
+        {
+            _menuSelectionPanel = _root.Q<VisualElement>("menu-selection-panel");
+            _menuAuthenticatePanel = _root.Q<VisualElement>("menu-authenticate-panel");
+            _menuSignInPanel = _root.Q<VisualElement>("menu-signin-panel");
+            
+            _registerButton = _root.Q<Button>("RegisterButton");
+            _emailSignInButton = _root.Q<Button>("EmailSignInButton");
+            _googleSignInButton = _root.Q<Button>("GoogleSignInButton");
+
+            _emailInputRegister = _root.Q<TextField>("EmailInput");
+            _passwordInputRegister = _root.Q<TextField>("PasswordInput");
+            _submitRegisterButton = _menuAuthenticatePanel?.Q<Button>("RegisterButton");
+            _backToSelectionFromRegister = _menuAuthenticatePanel?.Q<Button>("BackToSelectionFromRegister");
+            _togglePasswordRegister = _root.Q<Button>("TogglePasswordRegister");
+
+            _emailInputSignIn = _root.Q<TextField>("EmailSignIn");
+            _passwordInputSignIn = _root.Q<TextField>("PasswordSignIn");
+            _submitSignInButton = _root.Q<Button>("SignIn");
+            _backToSelectionFromSignIn = _menuSignInPanel?.Q<Button>("BackToSelectionFromSignIn");
+            _togglePasswordSignIn = _root.Q<Button>("TogglePasswordSignIn");
+
+            if (_menuSelectionPanel == null || _menuAuthenticatePanel == null || _menuSignInPanel == null)
+            {
+                Debug.LogError("UserManager: One or more required panels not found in UXML");
+            }
+        }
+
+        private void RegisterEventHandlers()
+        {
+            if (_registerButton != null)
         _registerButton.clicked += ShowRegisterPanel;
+            
+            if (_emailSignInButton != null)
         _emailSignInButton.clicked += ShowSignInPanel;
+            
+            if (_googleSignInButton != null)
         _googleSignInButton.clicked += OnGoogleSignInButtonClicked;
 
-        // Hide authentication panels
-        _menuAuthenticatePanel.style.display = DisplayStyle.None;
-        _menuSignInPanel.style.display = DisplayStyle.None;
-        
-        // Configure Google Sign-In
-        // _googleSignInConfiguration = new GoogleSignInConfiguration
-        // {
-        //     WebClientId = "YOUR_GOOGLE_WEB_CLIENT_ID",  // Get this from Firebase Console
-        //     RequestIdToken = true
-        // };
+            if (_submitRegisterButton != null)
+                _submitRegisterButton.clicked += OnRegisterButtonClicked;
+            
+            if (_backToSelectionFromRegister != null)
+                _backToSelectionFromRegister.clicked += ShowSelectionPanel;
+            
+            if (_submitSignInButton != null)
+                _submitSignInButton.clicked += OnSignInButtonClicked;
+            
+            if (_backToSelectionFromSignIn != null)
+                _backToSelectionFromSignIn.clicked += ShowSelectionPanel;
+            
+            if (_togglePasswordRegister != null)
+                _togglePasswordRegister.clicked += TogglePasswordVisibilityRegister;
+            
+            if (_togglePasswordSignIn != null)
+                _togglePasswordSignIn.clicked += TogglePasswordVisibilitySignIn;
+        }
 
-        // Check and fix Firebase dependencies
-        var dependencyStatus = await FirebaseApp.CheckAndFixDependenciesAsync();
-        if (dependencyStatus == DependencyStatus.Available)
+        private void ShowInitialPanel()
         {
-            // Set up Firebase authentication and database
-            _auth = FirebaseAuth.DefaultInstance;
-            _databaseRef = FirebaseDatabase.GetInstance("https://sparkiip-66e6d-default-rtdb.europe-west1.firebasedatabase.app/").RootReference;
-
-            Debug.Log("Firebase is ready.");
+            if (_authService.IsAuthenticated)
+            {
+                ShowAuthenticatedState();
         }
         else
         {
-            Debug.LogError($"Could not resolve Firebase dependencies: {dependencyStatus}");
+                ShowSelectionPanel();
+            }
         }
-    }
+
+        private void ShowSelectionPanel()
+        {
+            SetPanelVisibility(_menuSelectionPanel, true);
+            SetPanelVisibility(_menuAuthenticatePanel, false);
+            SetPanelVisibility(_menuSignInPanel, false);
+        }
+
     private void ShowRegisterPanel()
     {
-        _menuSelectionPanel.style.display = DisplayStyle.None;
-        _menuAuthenticatePanel.style.display = DisplayStyle.Flex;
+            SetPanelVisibility(_menuSelectionPanel, false);
+            SetPanelVisibility(_menuAuthenticatePanel, true);
+            SetPanelVisibility(_menuSignInPanel, false);
+
+            ClearInputFields(_emailInputRegister, _passwordInputRegister);
+            ResetPasswordVisibility(_passwordInputRegister, ref _isPasswordVisibleRegister, _togglePasswordRegister);
     }
 
   private void ShowSignInPanel()
     {
-        _menuSelectionPanel.style.display = DisplayStyle.None;
-        _menuSignInPanel.style.display = DisplayStyle.Flex;
-    }
-    private void OnGoogleSignInButtonClicked()
-    {
-        Debug.LogWarning("Google Sign-In: Implementation pending. Requires ID token from Google authentication.");
-    }
+            SetPanelVisibility(_menuSelectionPanel, false);
+            SetPanelVisibility(_menuAuthenticatePanel, false);
+            SetPanelVisibility(_menuSignInPanel, true);
+
+            ClearInputFields(_emailInputSignIn, _passwordInputSignIn);
+            ResetPasswordVisibility(_passwordInputSignIn, ref _isPasswordVisibleSignIn, _togglePasswordSignIn);
+        }
+
+        private void ShowAuthenticatedState()
+        {
+            SetPanelVisibility(_menuSelectionPanel, false);
+            SetPanelVisibility(_menuAuthenticatePanel, false);
+            SetPanelVisibility(_menuSignInPanel, false);
+
+            Debug.Log("UserManager: User is authenticated, showing main app");
+        }
+
     private async void OnRegisterButtonClicked()
     {
-        string email = _emailInputRegister.text;
-        string password = _passwordInputRegister.text;
+            // Prevent multiple simultaneous registrations
+            if (_isProcessingAuth)
+            {
+                Debug.LogWarning("UserManager: Registration already in progress");
+                return;
+            }
+        
+            string email = _emailInputRegister?.text?.Trim();
+            string password = _passwordInputRegister?.text;
 
-        // Validate email and password
-        if (string.IsNullOrEmpty(email))
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
         {
-            Debug.LogError("Email field cannot be empty.");
+                _uiFeedbackManager?.ShowError("Please fill in all fields");
             return;
         }
 
-        if (string.IsNullOrEmpty(password) || password.Length < 6)
+            _isProcessingAuth = true;
+            DisableAuthButtons();
+            _uiFeedbackManager?.ShowLoading("Creating account...");
+
+            try
+            {
+                FirebaseUser user = await _authService.CreateUserWithEmailAsync(email, password);
+
+                if (user != null)
+                {
+                    await SaveUserProfileAsync(user);
+                    _uiFeedbackManager?.ShowSuccess("Account created successfully!");
+                    ShowAuthenticatedState();
+                }
+            }
+            finally
+            {
+                _uiFeedbackManager?.HideLoading();
+                EnableAuthButtons();
+                _isProcessingAuth = false;
+            }
+        }
+
+        private async void OnSignInButtonClicked()
         {
-            Debug.LogError("Password must be at least 6 characters long.");
+            // Prevent multiple simultaneous sign-ins
+            if (_isProcessingAuth)
+            {
+                Debug.LogWarning("UserManager: Sign-in already in progress");
+                return;
+            }
+        
+            string email = _emailInputSignIn?.text?.Trim();
+            string password = _passwordInputSignIn?.text;
+
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            {
+                _uiFeedbackManager?.ShowError("Please fill in all fields");
             return;
         }
 
-        // Call CreateUser method to attempt registration
-        await CreateUser(email, password);
-    }
-    
-    /// <summary>
-    /// Creates a new user with email and password
-    /// </summary>
-    public async Task CreateUser(string email, string password)
-    {
-        try
-        {
-            var authResult = await _auth.CreateUserWithEmailAndPasswordAsync(email, password);
-            FirebaseUser newUser = authResult.User;
-            Debug.Log($"User created successfully: {newUser.UserId}");
-            await SaveUserToDatabase(newUser);
-        }
-        catch (FirebaseException ex)
-        {
-            Debug.LogError($"Failed to create user: {ex.Message}");
-        }
-        return System.Threading.Tasks.Task.CompletedTask;
-    }
-    
-    // Event handler for the login button
-    private async void OnSignInButtonClicked()
-    {
-        string email = _emailInputSignIn.text;
-        string password = _passwordInputSignIn.text;
+            _isProcessingAuth = true;
+            DisableAuthButtons();
+            _uiFeedbackManager?.ShowLoading("Signing in...");
 
-        // Validate email and password
-        if (string.IsNullOrEmpty(email))
+            try
+            {
+                FirebaseUser user = await _authService.SignInWithEmailAsync(email, password);
+
+                if (user != null)
+                {
+                    await UpdateLastLoginAsync(user.UserId);
+                    _uiFeedbackManager?.ShowSuccess("Signed in successfully!");
+                    ShowAuthenticatedState();
+                }
+            }
+            finally
+            {
+                _uiFeedbackManager?.HideLoading();
+                EnableAuthButtons();
+                _isProcessingAuth = false;
+            }
+        }
+
+        private async void OnGoogleSignInButtonClicked()
         {
-            Debug.LogError("Email field cannot be empty.");
+            if (_isProcessingAuth)
+            {
+                Debug.LogWarning("UserManager: Authentication already in progress");
+                return;
+            }
+
+            if (_googleSignInHandler == null)
+            {
+                _uiFeedbackManager?.ShowError("Google Sign-In not available");
+                Debug.LogError("UserManager: GoogleSignInHandler not initialized");
+                return;
+            }
+
+            _isProcessingAuth = true;
+            DisableAuthButtons();
+            _uiFeedbackManager?.ShowLoading("Signing in with Google...");
+
+            try
+            {
+                await _googleSignInHandler.SignInAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"UserManager: Google Sign-In exception: {ex.Message}");
+                _uiFeedbackManager?.ShowError("Google Sign-In failed. Please try again");
+            }
+            finally
+            {
+                _uiFeedbackManager?.HideLoading();
+                EnableAuthButtons();
+                _isProcessingAuth = false;
+            }
+        }
+
+        private async System.Threading.Tasks.Task SaveUserProfileAsync(FirebaseUser firebaseUser)
+        {
+            if (firebaseUser == null || _databaseRef == null)
+            {
+                return;
+            }
+
+            try
+            {
+                var profile = new UserProfile
+                {
+                    userId = firebaseUser.UserId,
+                    email = firebaseUser.Email
+                };
+                
+                await _databaseRef
+                    .Child("users")
+                    .Child(firebaseUser.UserId)
+                    .SetValueAsync(profile.ToDictionary());
+
+                Debug.Log($"UserManager: User profile saved for {firebaseUser.UserId}");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"UserManager: Failed to save user profile: {ex.Message}");
+            }
+        }
+
+        private async System.Threading.Tasks.Task UpdateLastLoginAsync(string userId)
+        {
+            if (string.IsNullOrEmpty(userId) || _databaseRef == null)
+            {
             return;
         }
 
-        if (string.IsNullOrEmpty(password))
+            try
+            {
+                await _databaseRef
+                    .Child("users")
+                    .Child(userId)
+                    .Child("lastLoginAt")
+                    .SetValueAsync(System.DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"UserManager: Failed to update last login: {ex.Message}");
+            }
+        }
+
+        public async System.Threading.Tasks.Task SignInWithGooglePlayGames(string idToken)
         {
-            Debug.LogError("Password field cannot be empty.");
+            if (string.IsNullOrEmpty(idToken))
+            {
+                _uiFeedbackManager?.ShowError("Invalid Google Play Games token");
             return;
         }
 
-        // Call SignInUser method to attempt login
-        await SignInUser(email, password);
-    }
+            _uiFeedbackManager?.ShowLoading("Signing in with Google Play Games...");
 
-    /// <summary>
-    /// Signs in a user with email and password
-    /// </summary>
-    private async Task SignInUser(string email, string password)
-    {
-        try
-        {
-            var authResult = await _auth.SignInWithEmailAndPasswordAsync(email, password);
-            FirebaseUser user = authResult.User;
+            FirebaseUser user = await _authService.SignInWithGoogleAsync(idToken);
 
-            Debug.Log($"Signed in successfully: {user.UserId}");
-        }
-        catch (FirebaseException ex)
-        {
-            Debug.LogError($"Failed to sign in: {ex.Message}");
-        }
-        return System.Threading.Tasks.Task.CompletedTask;
-    }
+            _uiFeedbackManager?.HideLoading();
 
-    /// <summary>
-    /// Saves user data to the database
-    /// </summary>
-    private async Task SaveUserToDatabase(FirebaseUser user)
-    {
-        Dictionary<string, object> userData = new Dictionary<string, object>
-        {
-            { "email", user.Email },
-            { "userId", user.UserId }
-        };
+            if (user != null)
+            {
+                await SaveUserProfileAsync(user);
+                await UpdateLastLoginAsync(user.UserId);
+                _uiFeedbackManager?.ShowSuccess("Signed in with Google Play Games!");
+                ShowAuthenticatedState();
+            }
+        }
 
-        try
+        public async System.Threading.Tasks.Task<string> GeneratePairCodeAsync()
         {
-            await _databaseRef.Child("users").Child(user.UserId).SetValueAsync(userData);
-            Debug.Log("User data saved successfully.");
-        }
-        catch (FirebaseException ex)
-        {
-            Debug.LogError($"Failed to save user data: {ex.Message}");
-        }
-        return System.Threading.Tasks.Task.CompletedTask;
-    }
-    /// <summary>
-    /// Authenticate with Firebase using Google Play Games ID Token
-    /// </summary>
-    public async Task SignInWithGooglePlayGames(string idToken)
-    {
-        try
-        {
-            var credential = GoogleAuthProvider.GetCredential(idToken, null);
-            FirebaseUser user = await _auth.SignInWithCredentialAsync(credential);
-            Debug.Log($"Google Play Games sign-in successful in Firebase: {user.UserId}");
+            if (!_authService.IsAuthenticated)
+            {
+                _uiFeedbackManager?.ShowError("You must be signed in to generate a pair code");
+                return null;
+            }
 
-            // Save user data to Firebase Database
-            await SaveUserToDatabase(user);
-        }
-        catch (FirebaseException ex)
-        {
-            Debug.LogError($"Google Play Games sign-in failed in Firebase: {ex.Message}");
-        }
-        return System.Threading.Tasks.Task.CompletedTask;
-    }
+            if (_pairLinkManager == null)
+            {
+                _uiFeedbackManager?.ShowError("Pairing service not available");
+                return null;
+            }
 
-    /// <summary>
-    /// Adds a friend to the user's friend list
-    /// </summary>
-    public async Task AddFriend(string userId, string friendId)
-    {
-        try
-        {
-            await _databaseRef.Child("users").Child(userId).Child("friends").Child(friendId).SetValueAsync(true);
-            Debug.Log("Friend added successfully.");
-        }
-        catch (FirebaseException ex)
-        {
-            Debug.LogError($"Failed to add friend: {ex.Message}");
-        }
-        return System.Threading.Tasks.Task.CompletedTask;
-    }
+            _uiFeedbackManager?.ShowLoading("Generating pair code...");
+            
+            string code = await _pairLinkManager.GeneratePairCodeAsync(_authService.CurrentUser.UserId);
+            
+            _uiFeedbackManager?.HideLoading();
 
-    /// <summary>
-    /// Google Sign-In integration
-    /// </summary>
-    public async Task SignInWithGoogle(string idToken)
-    {
-        try
-        {
-            var credential = GoogleAuthProvider.GetCredential(idToken, null);
-            FirebaseUser user = await _auth.SignInWithCredentialAsync(credential);
-            Debug.Log($"Google sign-in successful: {user.UserId}");
+            return code;
         }
-        catch (FirebaseException ex)
-        {
-            Debug.LogError($"Google sign-in failed: {ex.Message}");
-        }
-        return System.Threading.Tasks.Task.CompletedTask;
-    }
 
-    /// <summary>
-    /// Apple Sign-In integration
-    /// </summary>
-    public async Task SignInWithApple(string idToken)
-    {
-        try
+        public async System.Threading.Tasks.Task<bool> AcceptPairCodeAsync(string pairCode)
         {
-            var credential = OAuthProvider.GetCredential("apple.com", idToken, null, null);
-            FirebaseUser user = await _auth.SignInWithCredentialAsync(credential);
-            Debug.Log($"Apple sign-in successful: {user.UserId}");
+            if (!_authService.IsAuthenticated)
+            {
+                _uiFeedbackManager?.ShowError("You must be signed in to accept a pair code");
+                return false;
+            }
+
+            if (_pairLinkManager == null)
+            {
+                _uiFeedbackManager?.ShowError("Pairing service not available");
+                return false;
+            }
+
+            _uiFeedbackManager?.ShowLoading("Linking accounts...");
+            
+            bool success = await _pairLinkManager.AcceptPairCodeAsync(pairCode, _authService.CurrentUser.UserId);
+            
+            _uiFeedbackManager?.HideLoading();
+
+            return success;
         }
-        catch (FirebaseException ex)
+
+        private void HandleAuthStateChanged(FirebaseUser user)
         {
-            Debug.LogError($"Apple sign-in failed: {ex.Message}");
+            if (user != null)
+            {
+                Debug.Log($"UserManager: Auth state changed - User signed in: {user.UserId}");
+                ShowAuthenticatedState();
+            }
+            else
+            {
+                Debug.Log("UserManager: Auth state changed - User signed out");
+                ShowSelectionPanel();
+            }
         }
-        return System.Threading.Tasks.Task.CompletedTask;
+
+        private void HandleAuthError(string errorMessage)
+        {
+            _uiFeedbackManager?.ShowError(errorMessage);
+        }
+
+        private async void HandleGoogleSignInSuccess(string idToken)
+        {
+            try
+            {
+                FirebaseUser user = await _authService.SignInWithGoogleAsync(idToken);
+
+                if (user != null)
+                {
+                    await SaveUserProfileAsync(user);
+                    await UpdateLastLoginAsync(user.UserId);
+                    _uiFeedbackManager?.ShowSuccess("Signed in with Google successfully!");
+                    ShowAuthenticatedState();
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"UserManager: Failed to complete Google Sign-In: {ex.Message}");
+                _uiFeedbackManager?.ShowError("Failed to complete sign-in. Please try again");
+            }
+        }
+
+        private void HandleGoogleSignInError(string errorMessage)
+        {
+            _uiFeedbackManager?.ShowError(errorMessage);
+        }
+
+        private void HandlePairCodeGenerated(string pairCode)
+        {
+            _uiFeedbackManager?.ShowSuccess($"Pair code generated: {pairCode}");
+        }
+
+        private void HandlePairLinkSuccess(string userId1, string userId2)
+        {
+            _uiFeedbackManager?.ShowSuccess("Accounts linked successfully!");
+        }
+
+        private void HandlePairLinkError(string errorMessage)
+        {
+            _uiFeedbackManager?.ShowError(errorMessage);
+        }
+
+        private void SetPanelVisibility(VisualElement panel, bool visible)
+        {
+            if (panel != null)
+            {
+                panel.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+        }
+
+        private void ClearInputFields(params TextField[] fields)
+        {
+            foreach (var field in fields)
+            {
+                if (field != null)
+                {
+                    field.value = string.Empty;
+                }
+            }
+        }
+        
+        private void TogglePasswordVisibilityRegister()
+        {
+            TogglePasswordVisibility(_passwordInputRegister, ref _isPasswordVisibleRegister, _togglePasswordRegister);
+        }
+        
+        private void TogglePasswordVisibilitySignIn()
+        {
+            TogglePasswordVisibility(_passwordInputSignIn, ref _isPasswordVisibleSignIn, _togglePasswordSignIn);
+        }
+        
+        private void TogglePasswordVisibility(TextField passwordField, ref bool isVisible, Button toggleButton)
+        {
+            if (passwordField == null || toggleButton == null)
+            {
+                return;
+            }
+            
+            isVisible = !isVisible;
+            passwordField.isPasswordField = !isVisible;
+            
+            // Update icon
+            var icon = toggleButton.Q<Label>();
+            if (icon != null)
+            {
+                icon.text = isVisible ? "👁️" : "👁";
+            }
+            
+            // Update button style
+            if (isVisible)
+            {
+                toggleButton.AddToClassList("password-visible");
+            }
+            else
+            {
+                toggleButton.RemoveFromClassList("password-visible");
+            }
+        }
+        
+        private void ResetPasswordVisibility(TextField passwordField, ref bool isVisible, Button toggleButton)
+        {
+            if (passwordField == null || toggleButton == null)
+            {
+                return;
+            }
+            
+            isVisible = false;
+            passwordField.isPasswordField = true;
+            
+            var icon = toggleButton.Q<Label>();
+            if (icon != null)
+            {
+                icon.text = "👁";
+            }
+            
+            toggleButton.RemoveFromClassList("password-visible");
+        }
+
+        private void DisableAuthButtons()
+        {
+            _uiFeedbackManager?.SetButtonsEnabled(false, 
+                _submitRegisterButton, 
+                _submitSignInButton, 
+                _registerButton, 
+                _emailSignInButton, 
+                _googleSignInButton);
+        }
+
+        private void EnableAuthButtons()
+        {
+            _uiFeedbackManager?.SetButtonsEnabled(true, 
+                _submitRegisterButton, 
+                _submitSignInButton, 
+                _registerButton, 
+                _emailSignInButton, 
+                _googleSignInButton);
     }
 
     private void OnDestroy()
     {
-        // Clean up event subscriptions to prevent memory leaks
-        if (_submitRegisterButton != null)
-            _submitRegisterButton.clicked -= OnRegisterButtonClicked;
-        
-        if (_submitSignInButton != null)
-            _submitSignInButton.clicked -= OnSignInButtonClicked;
-        
         if (_registerButton != null)
             _registerButton.clicked -= ShowRegisterPanel;
         
@@ -306,6 +646,44 @@ namespace Assets.Scripts
         
         if (_googleSignInButton != null)
             _googleSignInButton.clicked -= OnGoogleSignInButtonClicked;
+
+            if (_submitRegisterButton != null)
+                _submitRegisterButton.clicked -= OnRegisterButtonClicked;
+            
+            if (_backToSelectionFromRegister != null)
+                _backToSelectionFromRegister.clicked -= ShowSelectionPanel;
+            
+            if (_submitSignInButton != null)
+                _submitSignInButton.clicked -= OnSignInButtonClicked;
+            
+            if (_backToSelectionFromSignIn != null)
+                _backToSelectionFromSignIn.clicked -= ShowSelectionPanel;
+            
+            if (_togglePasswordRegister != null)
+                _togglePasswordRegister.clicked -= TogglePasswordVisibilityRegister;
+            
+            if (_togglePasswordSignIn != null)
+                _togglePasswordSignIn.clicked -= TogglePasswordVisibilitySignIn;
+
+            if (_authService != null)
+            {
+                _authService.OnAuthStateChanged -= HandleAuthStateChanged;
+                _authService.OnAuthError -= HandleAuthError;
+                _authService.Dispose();
+            }
+
+            if (_pairLinkManager != null)
+            {
+                _pairLinkManager.OnPairCodeGenerated -= HandlePairCodeGenerated;
+                _pairLinkManager.OnPairLinkSuccess -= HandlePairLinkSuccess;
+                _pairLinkManager.OnPairLinkError -= HandlePairLinkError;
+            }
+
+            if (_googleSignInHandler != null)
+            {
+                _googleSignInHandler.OnSignInSuccess -= HandleGoogleSignInSuccess;
+                _googleSignInHandler.OnSignInError -= HandleGoogleSignInError;
+            }
     }
     }
 }

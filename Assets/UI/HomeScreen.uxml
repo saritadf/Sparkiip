@@ -1,26 +1,123 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/HomeStyle.uss?fileID=7433441132597879392&amp;guid=0fd9fc820e2489d43b0a22ce54b79ada&amp;type=3#HomeStyle" />
-    <ui:VisualElement name="main-menu-screen" class="screen screen-background" style="height: auto; width: auto; -unity-font: resource(&apos;Fonts/Signature&apos;);">
-        <ui:VisualElement name="menu-left-panel" class="menu-left-panel menu-background-color" style="align-self: flex-start; transition-timing-function: ease-out-bounce; transition-delay: 2s;">
-            <ui:VisualElement name="menu-start-title" style="width: 100%; height: 10%; min-height: 150px; background-image: resource(&apos;Fire&apos;); -unity-background-scale-mode: scale-to-fit; translate: 0 0; transform-origin: center; scale: 1 1;" />
-            <ui:VisualElement name="menu-button-list" class="menu-button-list" style="width: 100%; justify-content: flex-start; align-self: auto; height: auto; flex-shrink: 1; flex-direction: column; align-items: flex-start; min-width: 100%;">
-                <ui:Button text="Mom" parse-escape-sequences="true" display-tooltip-when-elided="true" enable-rich-text="false" name="button" class="button menu-button" style="flex-basis: auto; font-size: 20%; transition-timing-function: ease; transition-delay: 0s; transition-property: all; height: 50px; -unity-text-align: middle-center;" />
+    
+    <!-- Main Container -->
+    <ui:VisualElement name="root" class="root">
+        
+        <!-- Welcome Screen - Selection Panel -->
+        <ui:VisualElement name="menu-selection-panel" class="auth-panel">
+            <ui:VisualElement class="auth-content">
+                <!-- Logo/Brand Area -->
+                <ui:VisualElement class="brand-container">
+                    <ui:Label text="✨ Sparkiip" class="brand-title" />
+                    <ui:Label text="Stay connected, stay close" class="brand-subtitle" />
+                </ui:VisualElement>
+                
+                <!-- Buttons Container -->
+                <ui:VisualElement class="button-container">
+                    <ui:Button text="Create Account" name="RegisterButton" class="button button-primary" />
+                    <ui:Button text="Sign In" name="EmailSignInButton" class="button button-secondary" />
+                    <ui:VisualElement class="divider">
+                        <ui:Label text="or" class="divider-text" />
+                    </ui:VisualElement>
+                    <ui:Button text="Continue with Google" name="GoogleSignInButton" class="button button-google" />
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="menu-authenticate-panel" class="menu-left-panel" style="align-self: flex-start; transition-timing-function: ease-out-bounce; transition-delay: 2s; align-items: flex-end; justify-content: flex-start; flex-direction: column; position: absolute; top: 376px; left: 229px; height: 179px; width: 420px;">
-            <ui:TextField picking-mode="Ignore" label="Email" view-data-key="emailField" name="EmailInput" style="width: 428px; font-size: 12px; color: rgb(0, 0, 0); -unity-font-style: bold; height: 41px; align-items: auto; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; text-overflow: clip; white-space: nowrap; -unity-text-align: upper-left; -unity-font: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&amp;guid=72c906353dac9e94d8a2a94673a61f83&amp;type=3#NotInter-Regular&quot;); -unity-font-definition: initial; justify-content: flex-start; flex-wrap: nowrap; transform-origin: 38%; flex-direction: row-reverse;" />
-            <ui:TextField picking-mode="Ignore" label="Password" view-data-key="passwordField" name="PasswordInput" style="width: 421px; -unity-font-style: bold; color: rgb(0, 0, 0); font-size: 12px; height: 41px; align-items: auto; flex-direction: row-reverse;" />
-            <ui:Button text="Register" parse-escape-sequences="false" display-tooltip-when-elided="true" name="RegisterButton" view-data-key="registerButton" style="align-items: auto; align-self: center; font-size: 15px; justify-content: flex-start; height: 41px; width: 89px; -unity-text-align: upper-center; position: relative; top: auto; left: auto;" />
+        
+        <!-- Register Panel -->
+        <ui:VisualElement name="menu-authenticate-panel" class="auth-panel" style="display: none;">
+            <ui:VisualElement class="auth-content">
+                <!-- Back Button -->
+                <ui:Button text="← Back" name="BackToSelectionFromRegister" class="button button-back" />
+                
+                <!-- Header -->
+                <ui:VisualElement class="auth-header">
+                    <ui:Label text="Create Your Account" class="auth-title" />
+                    <ui:Label text="Join Sparkiip and stay emotionally connected" class="auth-subtitle" />
+                </ui:VisualElement>
+                
+                <!-- Form -->
+                <ui:VisualElement class="form-container">
+                    <ui:TextField label="Email" name="EmailInput" class="text-input" placeholder-text="your@email.com" />
+                    
+                    <!-- Password Field with Toggle -->
+                    <ui:VisualElement class="password-field-container">
+                        <ui:TextField label="Password" name="PasswordInput" password="true" class="text-input password-input" placeholder-text="At least 6 characters" />
+                        <ui:Button name="TogglePasswordRegister" class="password-toggle-button">
+                            <ui:Label text="👁" class="password-toggle-icon" />
+                        </ui:Button>
+                    </ui:VisualElement>
+                    
+                    <ui:Button text="Create Account" name="RegisterButton" class="button button-primary form-submit-button" />
+                </ui:VisualElement>
+                
+                <!-- Footer -->
+                <ui:Label text="Already have an account?" class="auth-footer-text" />
+            </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="menu-signin-panel" class="menu-left-panel" style="align-self: flex-start; transition-timing-function: ease-out-bounce; transition-delay: 2s; align-items: flex-end; justify-content: flex-start; flex-direction: column; position: absolute; top: 151px; left: 240px; height: 207px; width: 429px;">
-            <ui:TextField picking-mode="Ignore" label="Email" view-data-key="emailField" name="EmailSignIn" style="width: 399px; font-size: 12px; color: rgb(0, 0, 0); -unity-font-style: bold; height: 53px; align-items: auto; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; text-overflow: clip; white-space: nowrap; -unity-text-align: upper-left; -unity-font: url(&quot;project://database/Assets/UI%20Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss?fileID=2230732570650464555&amp;guid=72c906353dac9e94d8a2a94673a61f83&amp;type=3#NotInter-Regular&quot;); -unity-font-definition: initial; justify-content: flex-start; flex-wrap: nowrap; transform-origin: 38%; flex-direction: row-reverse;" />
-            <ui:TextField picking-mode="Ignore" label="Password" view-data-key="passwordField" name="PasswordSignIn" style="width: 391px; -unity-font-style: bold; color: rgb(0, 0, 0); font-size: 12px; height: 59px; align-items: auto; flex-direction: row-reverse;" />
-            <ui:Button text="SIgn In" parse-escape-sequences="false" display-tooltip-when-elided="true" name="SignIn" view-data-key="signInButton" style="align-items: auto; align-self: center; font-size: 15px; justify-content: flex-start; height: 41px; width: 89px; -unity-text-align: upper-center; position: relative; top: auto; left: auto;" />
+        
+        <!-- Sign In Panel -->
+        <ui:VisualElement name="menu-signin-panel" class="auth-panel" style="display: none;">
+            <ui:VisualElement class="auth-content">
+                <!-- Back Button -->
+                <ui:Button text="← Back" name="BackToSelectionFromSignIn" class="button button-back" />
+                
+                <!-- Header -->
+                <ui:VisualElement class="auth-header">
+                    <ui:Label text="Welcome Back" class="auth-title" />
+                    <ui:Label text="Sign in to continue your connection" class="auth-subtitle" />
+                </ui:VisualElement>
+                
+                <!-- Form -->
+                <ui:VisualElement class="form-container">
+                    <ui:TextField label="Email" name="EmailSignIn" class="text-input" placeholder-text="your@email.com" />
+                    
+                    <!-- Password Field with Toggle -->
+                    <ui:VisualElement class="password-field-container">
+                        <ui:TextField label="Password" name="PasswordSignIn" password="true" class="text-input password-input" placeholder-text="Your password" />
+                        <ui:Button name="TogglePasswordSignIn" class="password-toggle-button">
+                            <ui:Label text="👁" class="password-toggle-icon" />
+                        </ui:Button>
+                    </ui:VisualElement>
+                    
+                    <ui:Button text="Sign In" name="SignIn" class="button button-primary form-submit-button" />
+                </ui:VisualElement>
+                
+                <!-- Footer -->
+                <ui:Label text="Don't have an account yet?" class="auth-footer-text" />
+            </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="menu-selection-panel" class="menu-left-panel" style="align-self: flex-start; transition-timing-function: ease-out-bounce; transition-delay: 2s; align-items: flex-end; justify-content: flex-start; flex-direction: column; position: absolute; top: 126px; left: 140px; height: 146px; width: 117px;">
-            <ui:Button text="Register" parse-escape-sequences="false" display-tooltip-when-elided="true" name="RegisterButton" view-data-key="registerButton" style="align-items: auto; align-self: center; font-size: 15px; justify-content: flex-start; height: 41px; width: 89px; -unity-text-align: upper-center; position: relative; top: auto; left: auto;" />
-            <ui:Button text="SIgn In" parse-escape-sequences="false" display-tooltip-when-elided="true" name="EmailSignInButton" view-data-key="emailSignInButton" enable-rich-text="false" style="align-items: auto; align-self: center; font-size: 15px; justify-content: flex-start; height: 41px; width: 89px; -unity-text-align: upper-center; position: relative; top: auto; left: auto;" />
-            <ui:Button text="Google" parse-escape-sequences="false" display-tooltip-when-elided="false" name="GoogleSignInButton" view-data-key="googleSignInButton" style="align-items: auto; align-self: center; font-size: 15px; justify-content: flex-start; height: 41px; width: 89px; -unity-text-align: upper-center; position: relative; top: auto; left: auto;" />
+        
+        <!-- Profile Setup Panel (Overlay) -->
+        <ui:VisualElement name="profile-setup-panel" class="overlay-panel">
+            <ui:VisualElement class="overlay-content">
+                <ui:Label text="Welcome to Sparkiip! ✨" class="overlay-title" />
+                <ui:Label text="Let's set up your profile" class="overlay-subtitle" />
+                
+                <ui:TextField label="Display Name" name="DisplayNameInput" class="text-input" placeholder-text="What should we call you?" max-length="30" />
+                
+                <ui:Label text="Choose Your Avatar" class="section-label" />
+                <ui:VisualElement name="avatar-container" class="avatar-container" />
+                
+                <ui:VisualElement class="button-group">
+                    <ui:Button text="Skip for Now" name="SkipProfileButton" class="button button-secondary" />
+                    <ui:Button text="Continue" name="SubmitProfileButton" class="button button-primary" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Loading Overlay -->
+        <ui:VisualElement name="loading-overlay" class="overlay-panel loading-overlay">
+            <ui:VisualElement class="loading-content">
+                <ui:VisualElement class="loading-spinner" />
+                <ui:Label name="loading-label" text="Loading..." class="loading-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Message Container (Toast) -->
+        <ui:VisualElement name="message-container" class="message-container">
+            <ui:Label name="message-label" class="message-text" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 5d7566ad054f6654589e5fcde7b818d0
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 248841
+  packageName: Chat GPT For Games - AI Integration
+  packageVersion: 1.6
+  assetPath: Assets/BitSplash/ChatGptIntegration/Extras/Game Concepts/MindReader/MindReader.cs
+  uploadId: 660950

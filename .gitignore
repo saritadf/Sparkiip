@@ -79,3 +79,10 @@ GoogleService-Info.plist
 Assets/google-services.json
 Assets/GoogleService-Info.plist
 
+# ChatGPT API Authentication (NEVER COMMIT API KEYS!)
+Assets/Resources/GPTAuth.asset
+Assets/Resources/GPTAuth.asset.meta
+Assets/Resources/**/ChatGPTForGames/
+Assets/Resources/DefaultChatGptApiAuth*.asset
+Assets/Resources/DefaultChatGptApiAuthExt.asset
+

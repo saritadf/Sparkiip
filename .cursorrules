@@ -7,10 +7,12 @@
 - User-facing UI strings: use proper localization system only
 
 ## Documentation Policy
-- **DO NOT auto-generate documentation** unless explicitly requested
+- ⛔ **NEVER auto-generate .md documentation files** for changes/features/fixes
+- ⛔ **NEVER create summary documents, guides, or feature docs** unless EXPLICITLY requested
+- ⛔ **NEVER explain changes in separate markdown files** - just do the work
 - Prefer self-documenting code over comments
-- Only create README/docs when user specifically asks
-- Clean up temporary documentation files after tasks
+- Only create README/docs when user specifically asks with phrases like "document this" or "create a guide"
+- If user says "no documentation needed" or similar, respect that always
 
 ## Naming Conventions
 - **PascalCase**: classes, public methods, properties, public fields

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 4a82afee8e17b074dbd16cf31b60a121
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 248841
+  packageName: Chat GPT For Games - AI Integration
+  packageVersion: 1.6
+  assetPath: Assets/BitSplash/ChatGptIntegration/Extras/Tutorial/Persistant Converstation/PersistantConversation.unity
+  uploadId: 660950
